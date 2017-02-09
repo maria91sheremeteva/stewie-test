@@ -2,8 +2,8 @@
 
 $servername = "localhost";
 $username = "root";
-$password = "password";
-$dbname = 'test_db';
+$password = "";
+$dbname = 'task2';
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
 
@@ -15,7 +15,7 @@ echo "Connected successfully" . '<br>';
 
 echo '<br><br> Question 1';
 
-$query1 = 'SELECT SUM(summa) FROM payment';
+$query1 = 'SELECT * FROM `order` AS `o` INNER JOIN `payment` ON o.id = payment.order_id';
 
 echo '<br/>' . $query1;
 $res1 = mysqli_query($conn, $query1);
@@ -34,7 +34,7 @@ while ($row = $res1->fetch_assoc()) {
 
 echo '<br><br><br>Question 2';
 
-$query2 = 'SELECT * FROM product_item INNER JOIN order_item AS item ON'
+$query2 = 'SELECT SUM(price) FROM product_item INNER JOIN order_item AS item ON'
         . ' product_item.order_item_id = item.id'
         . ' INNER JOIN `order` AS `o` ON item.order_id = o.id'
         . ' WHERE o.status="done" AND MONTH(o.finish_date) = 1 AND YEAR(o.finish_date) = 2017'
@@ -48,55 +48,32 @@ echo '<pre>';
 print_r($res2);
 echo '</pre>';
 
-$summ = 0;
+echo '<pre>';
+print_r($res2->fetch_assoc());
+echo '</pre>';
 
-while ($row = $res2->fetch_assoc()) {
-    $summ += $row['price'];
-    echo '<pre>';
-    var_dump($row['price'], $row['product_id']);
-    echo '</pre>';
-}
-
-printf($summ);
 
 
 echo '<br/><br/><br/> Question 3';
 
-$query3_1 = 'SELECT product_id FROM `order_item` INNER JOIN `order` AS `o` ON o.id = order_item.order_id'
-        . ' WHERE status="new"';
-
-echo '<br>' . $query3_1;
-$res3_1 = mysqli_query($conn, $query3_1);
+$query3 = 'SELECT product_id FROM `order_item` INNER JOIN `order` AS `o` ON o.id = order_item.order_id'
+        . ' WHERE o.status="new" AND order_item.product_id NOT IN (SELECT product_id FROM `product_item` AS `pri` '
+        . ' WHERE pri.status="free"  AND pri.order_item_id=0)';
 
 
-$order_ids = [];
-while ($row = $res3_1->fetch_assoc()) {
-    array_push($order_ids, $row['product_id']);
+echo '<br>' . $query3;
+$res3 = mysqli_query($conn, $query3);
+
+echo '<pre>';
+print_r($res3);
+echo '</pre>';
+
+echo 'Количество недостающих товаров = '.$res3->num_rows;
+
+while ($row = $res3->fetch_assoc()) {
+    echo '<pre>';
+    print_r($row);
+    echo '</pre>';
 }
 
 
-echo '<br>';
-echo '<br>';
-echo 'product ids in order_item table <pre>';
-print_r($order_ids);
-echo '</pre>';
-
-
-$query3_2 = 'SELECT product_id FROM `product_item` WHERE STATUS="free"  AND order_item_id = "0"';
-echo $query3_2 . '<br>';
-$res3_2 = mysqli_query($conn, $query3_2);
-$product_ids = [];
-while ($row = $res3_2->fetch_assoc()) {
-    array_push($product_ids, $row['product_id']);
-}
-
-echo 'Product Ids in product item table <pre>';
-print_r($product_ids);
-echo '</pre>';
-
-
-$pr_ids = array_diff($order_ids, $product_ids);
-
-echo 'id продуктов которые отсутсвуют на складе <pre>';
-print_r($pr_ids);
-echo '</pre>';

@@ -19,10 +19,6 @@ interface i_model {
 
 abstract class model implements i_model {
     
-}
-
-class blog_post extends model {
-
     private $id;
     private $date;
     private $name = '';
@@ -30,7 +26,7 @@ class blog_post extends model {
     private $db;
 
     public function __construct($id = null) {
-        $this->db = DbSimple_Generic::connect("mysql://root:password@localhost/ptest");
+        $this->db = DbSimple_Generic::connect("mysql://root:password@localhost/task1");
     }
 
     public function set_field($field, $value) {
@@ -54,21 +50,20 @@ class blog_post extends model {
         $get_query = '';
         switch ($field) {
             case 'name':
-                $get_query = 'SELECT name FROM ' . __CLASS__;
+                $get_query = 'SELECT name FROM ' . get_class($this);
                 break;
             case 'date':
-                $get_query = 'SELECT date FROM ' . __CLASS__;
+                $get_query = 'SELECT date FROM ' . get_class($this);
                 break;
             case 'text':
-                $get_query = 'SELECT text FROM ' . __CLASS__;
+                $get_query = 'SELECT text FROM ' . get_class($this);
                 break;
             case 'id':
-                $get_query = 'SELECT id FROM ' . __CLASS__;
+                $get_query = 'SELECT id FROM ' . get_class($this);
                 break;
         }
 
         $result = $this->db->select($get_query);
-
         $response = '';
 
         foreach ($result as $res) {
@@ -81,32 +76,35 @@ class blog_post extends model {
         $date = new DateTime();
         $this->date = $date->format('Y-m-d');
 
-        $save_query = 'INSERT INTO ' . __CLASS__ . ' (date, name, text) VALUES ('
+        $save_query = 'INSERT INTO ' . get_class($this) . ' (date, name, text) VALUES ('
                 . "'" . $this->date . "'" . ',' . "'" . $this->name . "'" . ',' . "'" . $this->text . "'" . ')';
-
         $res = $this->db->query($save_query);
     }
 
     public function delete() {
-        $del_query = 'DELETE FROM ' . __CLASS__ . ' ORDER BY id DESC limit 1';
+        $del_query = 'DELETE FROM ' . get_class($this) . ' ORDER BY id DESC limit 1';
         $this->db->query($del_query);
     }
 
     public function id() {
         $this->get_field('id');
     }
+}
+
+class blog_post extends model {
+
 
 }
 
 $post_1 = new blog_post();
 $post_2 = new blog_post();
-//
+
 echo $post_1->get_field('date');
 echo '<br>';
 echo $post_1->get_field('text');
 echo '<br>';
 
-//$post_1->delete();
+$post_1->delete();
 
 $post_2->set_field('name', 'Name 2');
 $post_2->set_field('text', 'Text 2');
@@ -118,7 +116,7 @@ $post_3->set_field('text', 'Text 3');
 
 $post_3->save();
 
-//$post_3->delete();
+$post_3->delete();
 
 echo '<br>';
 echo $post_3->id();
@@ -126,6 +124,10 @@ echo '<br>';
 
 
 // blog_topic
+class blog_topic extends model{
+    
+}
 
-//$topic = new blog_topic(1);
-//$topic->save();
+$topic = new blog_topic();
+$topic->set_field('name', 'topic name');
+$topic->save();
